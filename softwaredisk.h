@@ -15,7 +15,6 @@ typedef enum  {
 } SDError;
 
 // function prototypes for software disk API
-
 // initializes the software disk to all zeros, destroying any existing
 // data.  Returns 1 on success, otherwise 0. Always sets global 'sderror'.
 int init_software_disk();

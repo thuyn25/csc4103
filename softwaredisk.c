@@ -52,7 +52,6 @@ int init_software_disk() {
 
 // returns the size of the SoftwareDisk in multiples of SOFTWARE_DISK_BLOCK_SIZE
 unsigned long software_disk_size() {
-
   return NUM_BLOCKS;
 }
 
@@ -108,10 +107,10 @@ int read_sd_block(void *buf, unsigned long blocknum) {
     else {
       fseek(sd.fp, 0L, SEEK_END);
       if (ftell(sd.fp) != NUM_BLOCKS * SOFTWARE_DISK_BLOCK_SIZE) {
-	fclose(sd.fp);
-	sd.fp=0;
-	sderror=SD_NOT_INIT;
-	return 0;
+          fclose(sd.fp);
+          sd.fp=0;
+          sderror=SD_NOT_INIT;
+          return 0;
       }
     }
   }
