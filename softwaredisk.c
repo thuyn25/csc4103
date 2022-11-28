@@ -38,7 +38,9 @@ int init_software_disk() {
     return 0;
   }
   
+/* Setting the block to all zeros. */
   bzero(block, SOFTWARE_DISK_BLOCK_SIZE);
+  /* This is writing the block to the file. */
   for (i=0; i < NUM_BLOCKS; i++) {
     if (fwrite(block, SOFTWARE_DISK_BLOCK_SIZE, 1, sd.fp) != 1) {
       fclose(sd.fp);
@@ -63,6 +65,10 @@ int write_sd_block(void *buf, unsigned long blocknum) {
   sderror=SD_NONE;
   if (! sd.fp) {
     sd.fp=fopen(BACKING_STORE, "r+");
+    /* This is checking if the file pointer is null. If it is, it sets the error to internal error and
+    returns 0. If it is not null, it seeks to the end of the file and checks if the file size is not
+    equal to the number of blocks times the block size. If it is not, it closes the file, sets the
+    file pointer to 0, sets the error to not initialized, and returns 0. */
     if (! sd.fp) {             
       sderror=SD_INTERNAL_ERROR;
       return 0;
@@ -70,20 +76,24 @@ int write_sd_block(void *buf, unsigned long blocknum) {
     else {
       fseek(sd.fp, 0L, SEEK_END);
       if (ftell(sd.fp) != NUM_BLOCKS * SOFTWARE_DISK_BLOCK_SIZE) {
-	fclose(sd.fp);
-	sd.fp=0;
-	sderror=SD_NOT_INIT;
-	return 0;
+        fclose(sd.fp);
+        sd.fp=0;
+        sderror=SD_NOT_INIT;
+        return 0;
       }
     }
   }
 
+  /* This is checking if the block number is greater than the number of blocks minus 1. If it is, it
+  sets the error to illegal block number and returns 0. */
   if (blocknum > NUM_BLOCKS-1) {
     sderror=SD_ILLEGAL_BLOCK_NUMBER;
     return 0;
   }
 
+/* This is seeking to the block number times the block size. */
   fseek(sd.fp, blocknum * SOFTWARE_DISK_BLOCK_SIZE, SEEK_SET);
+  /* This is writing the block to the file. */
   if (fwrite(buf, SOFTWARE_DISK_BLOCK_SIZE, 1, sd.fp) != 1) {
     sderror=SD_INTERNAL_ERROR;
     return 0;

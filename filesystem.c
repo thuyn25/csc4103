@@ -22,15 +22,47 @@
 #define NUM_SINGLE_INDIRECT_BLOCKS  (SOFTWARE_DISK_BLOCK_SIZE / sizeof(uint16_t))
 
 #define MAX_FILE_SIZE   (NUM_DIRECT_INODE_BLOCKS + NUM_SINGLE_INDIRECT_BLOCKS) * SOFTWARE_DISK_BLOCK_SIZE
+#define MAX_FILE_NAME_LENGTH        256
+#define BIT_VECTOR_LENGTH           (SOFTWARE_DISK_BLOCK_SIZE/sizeof(uint64_t))
+
+typedef struct DirEntry{
+    char fsname[MAX_FILE_NAME_LENGTH];
+    uint16_t num_inode;
+    // 
+} DirEntry;
+
+typedef struct inode {
+    uint64_t size;
+    uint16_t undirect[NUM_DIRECT_INODE_BLOCKS];
+    uint16_t indirect;
+} inode;
 
 // internals of software disk implementation
 typedef struct FileSystemInternals {
-  FILE *fp;       
+  struct DirEntry direntry;
+  struct inode i_data;
+  FileMode mode;
+  uint64_t position;
 } FileSystemInternals;
 
-static FileSystemInternals fs;
+struct FileSystemInternals *file; 
 FSError fserror;
+
+
 // function prototypes for filesystem API
+int set_block(){
+    uint64_t bit_vec[BIT_VECTOR_LENGTH];
+    read_sd_block(bit_vec, 0);
+    uint64_t full = 0xFFFFFFFFFFFFFFFF;
+    int pos = 0;
+
+    for (int i = 0; i < BIT_VECTOR_LENGTH){
+        // Check if the bit vector is full
+        if(!(bit_vec[i]^full)) pos += sizeof(uint64_t) * 
+    }
+
+
+}
 
 File open_file(char *name, FileMode mode){
     fserror = FS_NONE;

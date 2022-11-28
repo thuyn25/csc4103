@@ -43,7 +43,9 @@ int main(int argc, char *argv[]) {
   sd_print_error();
   
   printf("Writing a block of A's to block # 3.\n");
+  /* Setting the value of each byte in the buffer to the ASCII value of 'A'. */
   memset(buf, 'A', SOFTWARE_DISK_BLOCK_SIZE);
+  /* Writing the buffer to the 3rd block of the software disk. */
   ret=write_sd_block(buf, 3);
   printf("Return value was %d.\n", ret);
   sd_print_error();
