@@ -19,7 +19,7 @@
 #define LAST_DATA_BLOCK             4095
 #define MAX_FILENAME_SIZE           507
 #define NUM_DIRECT_INODE_BLOCKS     13
-#define NUM_SINGLE_INDIRECT_BLOCKS  (SOFTWARE_DISK_BLOCK_SIZE / sizeof(uint16_t))
+#define NUM_SINGLE_INDIRECT_BLOCKS  1       //(SOFTWARE_DISK_BLOCK_SIZE / sizeof(uint16_t))
 
 #define MAX_FILE_SIZE   (NUM_DIRECT_INODE_BLOCKS + NUM_SINGLE_INDIRECT_BLOCKS) * SOFTWARE_DISK_BLOCK_SIZE
 #define MAX_FILE_NAME_LENGTH        256
@@ -38,14 +38,14 @@ typedef struct inode {
 } inode;
 
 // internals of software disk implementation
-typedef struct FileSystemInternals {
+typedef struct FileInternals {
   struct DirEntry direntry;
   struct inode i_data;
   FileMode mode;
   uint64_t position;
-} FileSystemInternals;
+} FileInternals;
 
-struct FileSystemInternals *file; 
+struct FileInternals *file; 
 FSError fserror;
 
 
@@ -58,8 +58,12 @@ int set_block(){
 
     for (int i = 0; i < BIT_VECTOR_LENGTH){
         // Check if the bit vector is full
-        if(!(bit_vec[i]^full)) pos += sizeof(uint64_t) * 
+        if(!(bit_vec[i]^full)) pos += sizeof(uint64_t) * 8;
+        else {
+            bit_vec[i] = bit_vec[i]
+        }
     }
+
 
 
 }
@@ -67,13 +71,27 @@ int set_block(){
 File open_file(char *name, FileMode mode){
     fserror = FS_NONE;
     // check if filename has illegal character
-    if (!fs.fp){
+    if (!file_exists(name)){
         fserror = FS_FILE_NOT_FOUND;
-        return 0;
+        return NULL;
     }
-    else{
-        
+
+    File open = malloc(sizeof(struct FileInternals));
+    struct DirEntry dir;
+    for (int i =2; i < 2 +MAX_FILE_SIZE; i++){
+        read_sd_block(&dir, i);
+        if (!strncmp(dir.fsname, name, MAX_FILE_NAME_LENGTH)){
+            open->direntry = dir;
+            break;
+        }
     }
+
+    struct inode iblock[MAX_FILE_SIZE];
+    read_sd_block(&iblock, 1);
+    open->i_data = iblock[open->direntry.num_inode];
+    open->mode = mode;
+    open->position = 0;
+    
     //set current file position to byte 
 }
 
@@ -110,7 +128,14 @@ int delete_file(char *name){
 }
 
 int file_exists(char *name){
-    if (  )
+    fserror = FS_NONE;
+    struct DirEntry dir;
+    for (int i = 2; i < 2 + MAX_FILE_SIZE; i++){
+        read_sd_block(&dir, i);
+        if(!strncmp(dir.fsname, name, MAX_FILE_NAME_LENGTH))
+        return 1;
+    }
+    return 0;
 }
 
 void fs_print_error(void){

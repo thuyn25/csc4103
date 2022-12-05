@@ -471,8 +471,11 @@ int clear_block(unsigned int block_num)
  */
 int is_initialized()
 {
+/* Declaring a variable called bit_vector of type uint64_t. It is an array of length bit_vector_length. */
     uint64_t bit_vector[bit_vector_length];
+/* Reading the first block of the SD card. */
     read_sd_block(bit_vector, 0);
+/* Checking if the first bit of the bit vector is set. */
     return bit_vector[0] & 1;
 }
 
@@ -535,6 +538,7 @@ int is_file_open(char *name)
     {
         initialize_fs();
     }
+    /* Checking if the file is already open. */
     if(first_open_file)
     {
         File finder = first_open_file;
@@ -639,7 +643,9 @@ void add_to_open_files(File file)
     if(!first_open_file) first_open_file = file;
     else
     {
+/* Creating a pointer to the first open file. */
         File file_node_ptr = first_open_file;
+        /* Traversing the linked list to the end. */
         while(file_node_ptr->next)
         {
             file_node_ptr = file_node_ptr->next;
@@ -713,6 +719,7 @@ File open_file(char *name, FileMode mode)
         File finder = first_open_file;
         while(finder)
         {
+/* Comparing the name of the file to the name of the file that is being searched for. */
             if(!strncmp(finder->dir_entry.name, name, MAX_FILE_NAME_LENGTH))
                 break;
         }
@@ -735,6 +742,7 @@ File open_file(char *name, FileMode mode)
     file_to_open->mode = mode;
     file_to_open->position = 0;
     file_to_open->next = NULL;
+/* Adding the file to the open files list. */
     add_to_open_files(file_to_open);
     return file_to_open;
 }
